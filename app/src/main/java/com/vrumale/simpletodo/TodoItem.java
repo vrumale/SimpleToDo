@@ -13,7 +13,11 @@ public class TodoItem {
         this.body = body;
         this.priority = priority;
     }
-
+    @Override
+    public String toString(){
+       //return String.format("%d: %s", id, body);
+        return body;
+    }
     public String getBody() {
         return body;
     }

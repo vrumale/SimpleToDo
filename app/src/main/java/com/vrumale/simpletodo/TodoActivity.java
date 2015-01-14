@@ -18,8 +18,8 @@ import java.util.List;
 
 public class TodoActivity extends ActionBarActivity {
     ListView lvItems;
-    ArrayList<String> items;
-    ArrayAdapter<String> itemsAdapter;
+    ArrayList<TodoItem> items;
+    ArrayAdapter<TodoItem> itemsAdapter;
     List<TodoItem> db_items;
     TodoItemDatabase db;
     private final int REQUEST_CODE = 20;
@@ -30,10 +30,10 @@ public class TodoActivity extends ActionBarActivity {
         db = new TodoItemDatabase(this);
         setContentView(R.layout.activity_todo);
         lvItems = (ListView) findViewById(R.id.lvItems);
-        items = new ArrayList<String>();
+        items = new ArrayList<TodoItem>();
         //db_items = new TodoItem();
         readAllItems();
-        itemsAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1,items);
+        itemsAdapter = new ArrayAdapter<TodoItem>(this, android.R.layout.simple_list_item_1,db_items);
         lvItems.setAdapter(itemsAdapter);
         setupListViewListener();
     }
@@ -43,8 +43,9 @@ public class TodoActivity extends ActionBarActivity {
             @Override
             public boolean onItemLongClick(AdapterView<?> adapter, View item, int pos, long id) {
                 //remove item from database
-                removeItem(items.get(pos));
-                items.remove(pos);
+                //removeItem(pos);
+                db.deleteTodoItem(db_items.get(pos));
+                db_items.remove(pos);
                 itemsAdapter.notifyDataSetChanged();
                 return true;
                 }
@@ -55,7 +56,7 @@ public class TodoActivity extends ActionBarActivity {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View item, int pos, long l) {
                 Intent intent = new Intent(TodoActivity.this,EditItemActivity.class);
-                intent.putExtra("item",items.get(pos).toString());
+                intent.putExtra("item",db_items.get(pos).toString());
                 intent.putExtra("pos",pos);
                 startActivityForResult(intent,REQUEST_CODE);
             }
@@ -68,9 +69,13 @@ public class TodoActivity extends ActionBarActivity {
             // Extract name value from result extras
             String name = data.getExtras().getString("item");
             int pos = data.getExtras().getInt("pos");
-            updateItems(items.get(pos), name);
-            itemsAdapter.remove(itemsAdapter.getItem(pos));
-            itemsAdapter.insert(name, pos);
+            TodoItem oldItem = db_items.get(pos);
+            oldItem.setBody(name);
+            db.updateTodoItem(oldItem);
+            //updateItems(db_items.get(pos).getBody(), name);
+            //itemsAdapter.remove(itemsAdapter.getItem(pos));
+            //TodoItem newItem = new TodoItem(name, 1);
+            //itemsAdapter.insert(newItem, pos);
             itemsAdapter.notifyDataSetChanged();
 
             // Toast the name to display temporarily on screen
@@ -91,20 +96,23 @@ public class TodoActivity extends ActionBarActivity {
 
     private void readAllItems() {
         // Querying all todo items
+        // Inserting todo items
         db_items = db.getAllTodoItems();
         for(TodoItem t : db_items) {
             String itemString = new String(t.getBody());
-            items.add(itemString);
+           //todo items.add(itemString);
 
         }
     }
     public void onAddItem(View v) {
         EditText etNewItem = (EditText)findViewById(R.id.etNewItem);
-        String newItem = etNewItem.getText().toString();
+        String newBody = etNewItem.getText().toString();
+        TodoItem newItem = new TodoItem(newBody,1);
+        newItem.setId(itemsAdapter.getCount()+1);
         itemsAdapter.add(newItem);
         etNewItem.setText("");
-        TodoItem item = new TodoItem(newItem,1);
-        writeItems(item);
+        //TodoItem item = new TodoItem(newItem,1);
+        writeItems(newItem);
     }
     private void writeItems(TodoItem item) {
         db.addTodoItem(item);
