@@ -10,7 +10,7 @@ Completed user stories:
 	
  Notes:
  Spent some time giving the app an icon and make it cross compatible with all devices and resolution
-
+* [x] Added SQLite support from the suggested feature 
 
 Walkthrough of all user stories:
 ![Video Walkthrough](Do!.gif)
